@@ -17,6 +17,10 @@ class Firestore:
         collection = self.get_collection(collection_name)
         return [snapshot.to_dict() for snapshot in collection.get()]
 
+    def read_all_with_id(self, collection_name):
+        collection = self.get_collection(collection_name)
+        return [{'id': snapshot.id, 'doc': snapshot.to_dict()} for snapshot in collection.get()]
+
     def get_all_collections(self):
         return [collection.id for collection in self.db.collections()]
 

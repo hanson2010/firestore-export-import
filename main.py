@@ -1,54 +1,28 @@
-import json
 import os
 from pathlib import Path
 
+from export_lib import export_collections
+from import_lib import import_collections
 from helpers.firestore_native import Firestore
 
 
-def export(collections_exclude='', output_dir='./output'):
-    env_name = 'GOOGLE_APPLICATION_CREDENTIALS'
+def connect():
+    env_name1 = 'GOOGLE_APPLICATION_CREDENTIALS'
     env_name2 = 'GOOGLE_CLOUD_PROJECT'
     # Check if the environment variable exists
-    if env_name not in os.environ:
-        print(f"Error: Environment variable '{env_name}' is not defined.")
+    if env_name1 not in os.environ:
+        print(f"Error: Environment variable '{env_name1}' is not defined.")
         exit(1)
-    env_value = os.environ[env_name]
-    print(f'Firestore credential is at {env_value}.')
+    if env_name2 not in os.environ:
+        print(f"Error: Environment variable '{env_name2}' is not defined.")
+        exit(1)
+    env_value1 = os.environ[env_name1]
+    print(f'Firestore credential is at {env_value1}.')
+    env_value2 = os.environ[env_name2]
+    print(f'Firestore credential is at {env_value2}.')
 
-    client = Firestore(Path(env_value), 'avidict-us')
-
-    collections = client.get_all_collections()
-    filtered_collections = list([collection for collection in collections if collection not in collections_exclude.split(',')])
-
-    for collection in filtered_collections:
-        process_collection(client,
-                           Path(f'{output_dir}/{collection}.json'),
-                           collection)
-
-
-def calculate_sum():
-    num1 = int(input('Enter the first number: '))
-    num2 = int(input('Enter the second number: '))
-    sum = num1 + num2
-    print('The sum of the two numbers is:', sum)
-
-
-def print_message():
-    message = input('Enter the message you want to print: ')
-    print(message)
-
-
-def process_collection(client, file_path, collection):
-    fields = client.get_all_properties(collection)
-    docs = client.read_all(collection)
-
-    str = json.dumps(docs)
-
-    with open(file_path, 'w') as json_file:
-        json_file.write(str)
-
-    print(f'Wrote {len(docs)} documents from collection {collection}')
-
+    return Firestore(Path(env_value1), env_value2)
+    
 
 if __name__ == '__main__':
     print('Welcome to the Firestore Export and Import program!')
@@ -61,10 +35,10 @@ if __name__ == '__main__':
     selection = int(input('Enter your selection: '))
 
     if selection == 1:
-        export('airport', 'carrier', 'country', 'subdivision', 'token')
+        client = connect()
+        export_collections(client)
     elif selection == 2:
-        calculate_sum()
-    elif selection == 3:
-        print_message()
+        client = connect()
+        import_collections(client)
     else:
         print('Invalid selection. Please enter a number between 1 and 3.')
