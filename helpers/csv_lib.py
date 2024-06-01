@@ -1,5 +1,7 @@
 import csv
 
 
-def csv_writer(file, fields: list[str]) -> csv.DictWriter:
-    return csv.DictWriter(file, fieldnames=fields)
+class CSVLib:
+
+    def __init__(self, file, fields):
+        self._writer = csv.DictWriter(file, fieldnames=fields)

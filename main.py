@@ -1,44 +1,35 @@
-import os
-from pathlib import Path
-
-from export_lib import export_collections
+from export_lib import export_collections, export_kind
 from import_lib import import_collections
-from helpers.firestore_native import Firestore
+from helpers import Firestore, Datastore
 
-
-def connect():
-    env_name1 = 'GOOGLE_APPLICATION_CREDENTIALS'
-    env_name2 = 'GOOGLE_CLOUD_PROJECT'
-    # Check if the environment variable exists
-    if env_name1 not in os.environ:
-        print(f"Error: Environment variable '{env_name1}' is not defined.")
-        exit(1)
-    if env_name2 not in os.environ:
-        print(f"Error: Environment variable '{env_name2}' is not defined.")
-        exit(1)
-    env_value1 = os.environ[env_name1]
-    print(f'Firestore credential is at {env_value1}.')
-    env_value2 = os.environ[env_name2]
-    print(f'Firestore credential is at {env_value2}.')
-
-    return Firestore(Path(env_value1), env_value2)
-    
 
 if __name__ == '__main__':
     print('Welcome to the Firestore Export and Import program!')
 
     print('Please select from the following options:')
-    print('1. Export Firestore in native mode to json file')
-    print('2. Calculate the sum of two numbers')
-    print('3. Print a message')
+    print('1. Export Firestore in Native mode to json file.')
+    print('2. Export Firestore in Datastore mode to json file.')
+    print('3. Import json file to Firestore in Native mode.')
 
     selection = int(input('Enter your selection: '))
 
     if selection == 1:
-        client = connect()
+        client = Firestore()
         export_collections(client)
     elif selection == 2:
-        client = connect()
-        import_collections(client)
+        kind = input('Please enter kind to export: ').strip()
+        order_str = input('Please enter field to order: ').strip()
+        order = (order_str, )
+        batch_str = input('Please enter batch size: ').strip()
+        batch = -1
+        offset = 0
+        if batch_str and batch_str != '-1':
+            batch = int(batch_str)
+            offset_str = input('Please enter offset: ').strip()
+            if offset_str:
+                offset = int(offset_str)
+        client = Datastore()
+        export_kind(client, kind, order, batch, offset)
     else:
-        print('Invalid selection. Please enter a number between 1 and 3.')
+        client = Firestore()
+        import_collections(client)
